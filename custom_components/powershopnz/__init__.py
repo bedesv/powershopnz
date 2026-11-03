@@ -22,6 +22,7 @@ from .const import (
     SENSORS_GROUPS_MAP,
 )
 from .coordinator import PowershopCoordinator
+from .shopping import PowerpackShoppingCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,6 +33,8 @@ _LOGGER = logging.getLogger(__name__)
 # ----------------------------------------------------------------------------
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
 ]
 
 type PowershopConfigEntry = ConfigEntry[RuntimeData]
@@ -42,6 +45,7 @@ class RuntimeData:
     """Class to hold your data."""
 
     coordinator: DataUpdateCoordinator
+    shopping: PowerpackShoppingCoordinator | None
     # cancel_update_listener: Callable
 
 
@@ -103,7 +107,12 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: PowershopConfigEn
     # Add the coordinator and update listener to your config entry to make
     # accessible throughout your integration
     # ----------------------------------------------------------------------------
-    config_entry.runtime_data = RuntimeData(coordinator)
+    shopping = None
+    if enabled_groups.get("shopping", True):
+        shopping = PowerpackShoppingCoordinator(hass, config_entry, coordinator._api_client, coordinator.async_request_refresh)
+        config_entry.async_on_unload(shopping.async_shutdown)
+        await shopping.async_refresh()
+    config_entry.runtime_data = RuntimeData(coordinator, shopping)
 
     # ----------------------------------------------------------------------------
     # Setup platforms (based on the list of entity types in PLATFORMS defined above)

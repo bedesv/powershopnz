@@ -309,6 +309,9 @@ async def async_setup_entry(
 ):
     """Set up the Sensors."""
     coordinator: PowershopCoordinator = config_entry.runtime_data.coordinator
+    from .shopping_entities import enabled, shopping_sensors
+    if enabled(config_entry):
+        async_add_entities(shopping_sensors(config_entry.runtime_data.shopping, config_entry))
 
     _LOGGER.debug("in sensor async_setup_entry")
     #get the list of rates to turn into sensors

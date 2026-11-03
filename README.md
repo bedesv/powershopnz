@@ -55,6 +55,87 @@ The icon currently doesn't work in HACS, due to a bug in HACS.
 
 <!-- [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=pshemk&repository=https%3A%2F%2Fgithub.com%2Fpshemk%2Fpowershopnz&category=Integration) -->
 
+## Available Powerpacks and one-click purchase
+
+This fork adds shop availability and a **Buy available Powerpacks (Pay later)** button.
+The button buys every currently eligible Staying Power, Special Pack, Future Pack,
+and EV Pack, including every remaining copy when an offer permits two or more.
+Value Packs, Standard Power and Nominated Packs are excluded.
+
+The shop refreshes every five minutes. Pressing the button fetches fresh offers;
+it does not rely on the last sensor update. It sets each cart quantity to the full
+remaining allowance, validates the cart and quote, and submits one Pay later order.
+This is a real purchase billed through your existing Powershop arrangement. The
+button has no confirmation dialog and can also be called by an HA automation.
+
+New entities (HA may append a suffix for additional properties):
+
+| Entity | Purpose |
+|---|---|
+| `sensor.powershopnz_available_powerpacks` | Total purchasable units; `offers` attributes contain names, categories, quantities, prices and redemption dates. |
+| `sensor.powershopnz_available_staying_power` | Remaining Staying Power quantity. |
+| `sensor.powershopnz_available_special_pack` | Remaining limited Special quantity. |
+| `sensor.powershopnz_available_future_pack` | Remaining Future Pack quantity. |
+| `sensor.powershopnz_available_ev_pack` | Remaining EV Pack quantity. |
+| `binary_sensor.powershopnz_powerpacks_available` | Whether any eligible offer is available. |
+| `sensor.powershopnz_powerpack_releases` | Persistent revision increased for newly available offers or increased allowances. Prices changing alone do not increase it. |
+| `sensor.powershopnz_powerpack_offers` | Fingerprint of available offer identities, quantities and redemption dates. |
+| `sensor.powershopnz_latest_powerpack_availability` | Time a new offer or allowance was detected, after the initial baseline. |
+| `button.powershopnz_buy_available_powerpacks` | Purchase every available approved pack with Pay later. |
+
+The initial poll establishes a baseline. Availability is remembered across reloads,
+so restarting HA does not create a new release event. Here is a notification-only
+automation; replace the phone notification action with your own:
+
+```yaml
+alias: Powershop new Powerpacks
+triggers:
+  - trigger: state
+    entity_id: sensor.powershopnz_powerpack_releases
+conditions:
+  - condition: template
+    value_template: >-
+      {{ trigger.from_state is not none
+         and trigger.from_state.state not in ['unknown', 'unavailable']
+         and trigger.to_state.state not in ['unknown', 'unavailable']
+         and (trigger.to_state.state | int(0)) > (trigger.from_state.state | int(0)) }}
+actions:
+  - action: notify.mobile_app_your_phone
+    data:
+      title: New Powershop Powerpacks
+      message: >-
+        {{ states('sensor.powershopnz_available_powerpacks') }} packs are available.
+        Total ${{ state_attr('sensor.powershopnz_available_powerpacks', 'total_price_nzd') }}.
+```
+
+Add the purchase button to a dashboard with:
+
+```yaml
+type: button
+entity: button.powershopnz_buy_available_powerpacks
+name: Buy Powerpacks (Pay later)
+tap_action:
+  action: perform-action
+  perform_action: button.press
+  target:
+    entity_id: button.powershopnz_buy_available_powerpacks
+```
+
+The purchase button refuses unrelated items already in the shared Powershop cart;
+clear those manually before buying all packs. Overlapping button presses are
+blocked. A pending purchase is saved in HA storage before checkout. If a timeout
+or ambiguous response leaves the result uncertain, the button is disabled and a
+persistent notification asks you to check Powershop purchase history before the
+saved attempt is resolved. No payment-now fallback or blind purchase retry occurs.
+A successful receipt is stored and availability and balances refresh automatically.
+
+The **Available Powerpacks and Pay later purchase** option controls these entities
+and shop polling; it is enabled by default for new and existing entries.
+
+This fork keeps the existing `powershopnz` integration domain and entity identities.
+Use this repository as your HACS custom repository instead of installing both forks.
+The standalone probe and its CLI purchase mode remain documented in [PROBE.md](PROBE.md).
+
 ## Sensors
 
 The integration provides the following regular sensors. All entities are in the `sensor.` domain.
@@ -264,3 +345,22 @@ This integration uses the [Historical sensor](https://github.com/ldotlopez/ha-hi
 
 This project is licensed under the GPL License - see the [LICENSE](LICENSE) file for details.
 
+
+## Development tests
+
+The standalone probe and pure shopping models need only Python 3.9 or later:
+
+```sh
+python3 -B -m unittest discover -s tools -p 'test_*.py'
+```
+
+For the isolated HA tests, use Python 3.14 with `homeassistant==2026.10.4`:
+
+```sh
+python3 -B -m unittest discover -s tests -p 'test_*.py'
+```
+
+These tests use synthetic HTTP responses and temporary storage; they do not log
+in or purchase power. A GitHub Actions configuration is provided at
+`tests/github-actions.yaml.example` for installation by an account with workflow
+permissions.

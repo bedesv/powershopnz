@@ -134,7 +134,6 @@ and shop polling; it is enabled by default for new and existing entries.
 
 This fork keeps the existing `powershopnz` integration domain and entity identities.
 Use this repository as your HACS custom repository instead of installing both forks.
-The standalone probe and its CLI purchase mode remain documented in [PROBE.md](PROBE.md).
 
 ## Sensors
 
@@ -344,23 +343,3 @@ This integration uses the [Historical sensor](https://github.com/ldotlopez/ha-hi
 ##  License
 
 This project is licensed under the GPL License - see the [LICENSE](LICENSE) file for details.
-
-
-## Development tests
-
-The standalone probe and pure shopping models need only Python 3.9 or later:
-
-```sh
-python3 -B -m unittest discover -s tools -p 'test_*.py'
-```
-
-For the isolated HA tests, use Python 3.14 with `homeassistant==2026.10.4`:
-
-```sh
-python3 -B -m unittest discover -s tests -p 'test_*.py'
-```
-
-These tests use synthetic HTTP responses and temporary storage; they do not log
-in or purchase power. A GitHub Actions configuration is provided at
-`tests/github-actions.yaml.example` for installation by an account with workflow
-permissions.

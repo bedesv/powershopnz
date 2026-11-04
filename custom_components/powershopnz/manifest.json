@@ -1,19 +1,17 @@
 {
   "domain": "powershopnz",
   "name": "Powershop NZ",
-  "codeowners": [
-    "@pshemk"
-  ],
+  "codeowners": ["@pshemk"],
   "config_flow": true,
   "dependencies": [
     "statistics",
     "recorder"
   ],
-  "documentation": "https://github.com/bedesv/powershopnz#readme",
+  "documentation": "https://github.com/pshemk/powershopnz#readme",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/bedesv/powershopnz/issues",
+  "issue_tracker": "https://github.com/pshemk/powershopnz/issues",
   "requirements": [
     "homeassistant-historical-sensor@git+https://github.com/pshemk/ha-historical-sensor.git@aae6a0e1428e83da21dc1a7d9e87354016aebcec"
   ],
-  "version": "1.1.0"
+  "version": "1.0.18"
 }

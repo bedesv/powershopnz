@@ -57,7 +57,7 @@ The icon currently doesn't work in HACS, due to a bug in HACS.
 
 ## Available Powerpacks and one-click purchase
 
-This fork adds shop availability and a **Buy available Powerpacks (Pay later)** button.
+The integration provides shop availability and a **Buy available Powerpacks (Pay later)** button.
 The button buys every currently eligible Staying Power, Special Pack, Future Pack,
 and EV Pack, including every remaining copy when an offer permits two or more.
 Value Packs, Standard Power and Nominated Packs are excluded.
@@ -131,9 +131,6 @@ A successful receipt is stored and availability and balances refresh automatical
 
 The **Available Powerpacks and Pay later purchase** option controls these entities
 and shop polling; it is enabled by default for new and existing entries.
-
-This fork keeps the existing `powershopnz` integration domain and entity identities.
-Use this repository as your HACS custom repository instead of installing both forks.
 
 ## Sensors
 

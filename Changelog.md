@@ -1,6 +1,6 @@
 ## Releases
 
-### v1.1.0
+### Unreleased
 - Added shop availability, per-category counts and persistent release tracking for notifications.
 - Added a single-click Pay later button that buys all eligible remaining quantities.
 - Added account-wide purchase locking, durable pending outcomes and fresh cart validation.

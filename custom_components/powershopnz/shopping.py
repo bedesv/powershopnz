@@ -23,7 +23,7 @@ from .shopping_models import (
 
 _LOGGER = logging.getLogger(__name__)
 SHOP_URL = "https://powerpacks.powershop.nz"
-USER_AGENT = "powershopnz-homeassistant/1.1 (+https://github.com/bedesv/powershopnz)"
+USER_AGENT = "powershopnz-homeassistant (+https://github.com/pshemk/powershopnz)"
 
 
 class ShopHTTPError(ShoppingError):

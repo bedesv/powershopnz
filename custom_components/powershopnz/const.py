@@ -14,6 +14,7 @@ CONF_ENABLED_SENSORS = "enabled_sensors"
 CONF_REPROCESS_DATA = "reprocess_data"
 CONF_SENSORS_OPTIONS = "sensors_options"
 CONF_SENSORS_GROUPS = {
+    "shopping": True,
     "billing_dates": True,
     "billing_period":  True,
     "rate_type": True,
@@ -25,6 +26,7 @@ CONF_SENSORS_GROUPS = {
 }
 
 SENSORS_GROUPS_MAP = {
+    "shopping": "shopping",
     "next_billing_date": "billing_dates",
     "current_billing_period": "billing_dates",
     "billing_period":  "billing_period" ,

@@ -1,5 +1,11 @@
 ## Releases
 
+### Unreleased
+- Added shop availability, per-category counts and persistent release tracking for notifications.
+- Added a single-click Pay later button that buys all eligible remaining quantities.
+- Added account-wide purchase locking, durable pending outcomes and fresh cart validation.
+- Fixed authentication retry handling and removed raw API error bodies from logs.
+
 ### v1.0.18
 -  make rates checking a bit more robust
 

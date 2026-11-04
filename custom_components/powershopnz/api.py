@@ -353,6 +353,7 @@ class PowershopApiClient:
         self.refresh_token: str | None = refresh_token
         self._id_token: str | None = None
         self._id_token_expiry: datetime | None = None
+        self._token_lock = asyncio.Lock()
 
     async def _connect(self) -> aiohttp.ClientSession:
         if self._session is None or self._session.closed:
@@ -385,7 +386,7 @@ class PowershopApiClient:
                 ) as resp:
                     data: dict[str, Any] = await resp.json()
                     if not resp.ok:
-                        raise AuthError(f"Can't get new id token: {data}")
+                        raise AuthError(f"Firebase sign-in failed: HTTP {resp.status}")
                     id_token = data["idToken"]
                     refresh_token = data["refreshToken"]
                     expires_in = int(data.get("expiresIn", 3600))
@@ -395,7 +396,9 @@ class PowershopApiClient:
                 self._id_token_expiry = datetime.now(UTC) + timedelta(seconds=expires_in - 60)
                 _LOGGER.debug("Received a new ID token")
                 return {"id_token": id_token, "refresh_token": refresh_token}
-            except:
+            except (AuthError, OTPError):
+                raise
+            except Exception as err:
                 if attempt == attempts:
                     _LOGGER.error(
                         "Getting tokens failed  after %s attempts", attempts
@@ -443,10 +446,10 @@ class PowershopApiClient:
                             "INVALID_REFRESH_TOKEN",
                         ):
                             raise RefreshTokenInvalidError(
-                                f"Refresh token rejected: {data}"
+                                "Refresh token rejected"
                             )
 
-                        raise AuthError(f"Token refresh failed: {data}")
+                        raise AuthError(f"Token refresh failed: HTTP {resp.status}")
                         
                     self._id_token = data["id_token"]
                     self.refresh_token = data["refresh_token"]
@@ -454,7 +457,9 @@ class PowershopApiClient:
                     self._id_token_expiry = datetime.now(UTC) + timedelta(seconds=expires_in - 60)
                     _LOGGER.debug("Refreshed ID token")
                     return
-            except:
+            except (AuthError, OTPError):
+                raise
+            except Exception as err:
                 if attempt == attempts:
                     _LOGGER.error(
                         "Refresh id token failed after %s attempts", attempts
@@ -470,16 +475,12 @@ class PowershopApiClient:
                 await asyncio.sleep(3)
 
     async def _get_current_token(self) -> str:
-        if (
-            self._id_token is None
-            or self._id_token_expiry is None
-            or datetime.now(UTC) >= self._id_token_expiry
-        ):
-            _LOGGER.debug("Refreshing ID token")
-            await self._refresh_id_token()
-        if self._id_token is None:
-            raise AuthError("ID token refresh returned no token")
-        return self._id_token
+        async with self._token_lock:
+            if self._id_token is None or self._id_token_expiry is None or datetime.now(UTC) >= self._id_token_expiry:
+                await self._refresh_id_token()
+            if self._id_token is None:
+                raise AuthError("ID token refresh returned no token")
+            return self._id_token
 
     async def send_otp(self, email: str) -> str:
 
@@ -507,7 +508,9 @@ class PowershopApiClient:
                     if not resp.ok:
                         raise AuthError(f"Failed to send OTP: HTTP {resp.status}")
                 return journey_id
-            except:
+            except (AuthError, OTPError):
+                raise
+            except Exception as err:
                 if attempt == attempts:
                     _LOGGER.error(
                         "OTP send failed after %s attempts", attempts
@@ -554,7 +557,9 @@ class PowershopApiClient:
 
                 _LOGGER.debug("OTP token returned ok")
                 return await self._get_tokens_from_custom_token(custom_token)
-            except:
+            except (AuthError, OTPError):
+                raise
+            except Exception as err:
                 if attempt == attempts:
                     _LOGGER.error(
                         "OTP validation failed after %s attempts", attempts
@@ -612,15 +617,17 @@ class PowershopApiClient:
                 ) as resp:
                     body: str = await resp.text()
                     if not resp.ok:
-                        _LOGGER.error(f"GraphQL {resp.status}:  {body}" )
-                        raise ValueError(f"GraphQL HTTP {resp.status}: {body[:500]}")
+                        _LOGGER.error("GraphQL HTTP %s", resp.status)
+                        raise ValueError(f"GraphQL HTTP {resp.status}")
                     data: dict[str, Any] = await resp.json(content_type=None)
                 if "errors" in data:
-                    _LOGGER.warning("GraphQL errors: %s", data["errors"])
+                    _LOGGER.warning("GraphQL returned errors")
                     raise ValueError(data["errors"][0].get("message", "GraphQL error"))
                 # _LOGGER.debug(f"GraphQL data: {body}")
                 return cast(dict[str, Any], data.get("data", {}))
-            except:
+            except (AuthError, OTPError):
+                raise
+            except Exception as err:
                 if attempt == attempts:
                     _LOGGER.error(
                         "GraphQL error after %s attempts", attempts

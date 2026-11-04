@@ -294,7 +294,7 @@ class PowershopOptionsFlow(OptionsFlowWithReload):
                     **{
                         vol.Required(group, default=enabled): selector.BooleanSelector()
                         for group, enabled in sorted(
-                            self.config_entry.options.get(CONF_SENSORS_OPTIONS, CONF_SENSORS_GROUPS).items()
+                            {**CONF_SENSORS_GROUPS, **self.config_entry.options.get(CONF_SENSORS_OPTIONS, {})}.items()
                         )
                     },
                     vol.Required(CONF_REPROCESS_DATA, default=self.config_entry.options.get(CONF_REPROCESS_DATA, False)): selector.BooleanSelector(),

@@ -19,7 +19,7 @@
         "title": "Properties",
         "description": "Select the property from the options below",
         "data": {
-            "property_id": "Property"
+          "property_id": "Property"
         }
       },
       "sensors": {
@@ -33,7 +33,8 @@
           "effective_rates": "Effective unit costs using powerpacks discounts",
           "historical_usage": "Past usage statistics",
           "historical_cost": "Past cost statistics",
-          "powerpacks": "Powerpacks balances"
+          "powerpacks": "Powerpacks balances",
+          "shopping": "Available Powerpacks and Pay later purchase"
         }
       },
       "reauth_confirm": {
@@ -58,21 +59,22 @@
   },
   "options": {
     "step": {
-        "init": {
-            "title": "Options",
-            "description": "Select the sensors you want to enable and processing options",
-            "data": {
-                "billing_dates": "Billing dates sensors",
-                "billing_period": "Billing period usage and cost sensors",
-                "rate_type": "Current rate type sensor",
-                "nominal_rates": "Nominal unit and daily costs sensors",
-                "effective_rates": "Effective unit costs using powerpacks discounts sensors",
-                "historical_usage": "Past usage statistics",
-                "historical_cost": "Past cost statistics",
-                "powerpacks": "Powerpacks balances sensors",
-                "reprocess_data": "Reprocess current billing period"
-            }
+      "init": {
+        "title": "Options",
+        "description": "Select the sensors you want to enable and processing options",
+        "data": {
+          "billing_dates": "Billing dates sensors",
+          "billing_period": "Billing period usage and cost sensors",
+          "rate_type": "Current rate type sensor",
+          "nominal_rates": "Nominal unit and daily costs sensors",
+          "effective_rates": "Effective unit costs using powerpacks discounts sensors",
+          "historical_usage": "Past usage statistics",
+          "historical_cost": "Past cost statistics",
+          "powerpacks": "Powerpacks balances sensors",
+          "reprocess_data": "Reprocess current billing period",
+          "shopping": "Available Powerpacks and Pay later purchase"
         }
+      }
     }
-  }  
+  }
 }
